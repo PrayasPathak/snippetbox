@@ -3,11 +3,10 @@ package main
 import (
 	"net/http"
 
+	"github.com/PrayasPathak/snippetbox/ui"
 	"github.com/julienschmidt/httprouter"
 	"github.com/justinas/alice"
 )
-
-const staticDirPath = "./ui/static"
 
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
@@ -16,8 +15,8 @@ func (app *application) routes() http.Handler {
 		app.notFound(w)
 	})
 
-	fileServer := http.FileServer(http.Dir(staticDirPath))
-	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
+	fileServer := http.FileServer(http.FS(ui.Files))
+	router.Handler(http.MethodGet, "/static/*filepath", fileServer)
 
 	// unprotected application routes (that do not require user authentication)
 	dynamic := alice.New(app.sessionManager.LoadAndSave, noSurf, app.authenticate)
